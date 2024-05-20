@@ -1,6 +1,10 @@
 from app import app
 from flask import render_template, request, redirect, url_for
-
+import requests
+from bs4 import BeautifulSoup
+from . import utils
+import json
+import os
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -9,9 +13,40 @@ def index():
 def extract():
     if request.method=='POST':
         product_id = request.form.get('product_id')
-        return redirect(url_for('product', product_id=product_id))
+        url = f"https://www.ceneo.pl/{product_id}"
+        response = requests.get(url)
+        if response.status_code == requests.codes['ok']:
+            page_dom = BeautifulSoup(response.text, "html.parser")
+            opinions_count = utils.extract(page_dom, "a.product-review__link > span")
+            if opinions_count:
+                all_opinions = []
+                while(url):
+                    response = requests.get(url)
+                    response.status_code
+                    page_dom = BeautifulSoup(response.text, "html.parser")
+                    opinions = page_dom.select("div.js_product-review")
+                    opinion = opinions.pop(0)
+                    for opinion in opinions:
+                        single_opinion= {
+                            key: utils.extract(opinion, *value)
+                            for key, value in utils.selectors.items()
+                        }
+                        all_opinions.append(single_opinion)
+                    try:
+                        url = "https://www.ceneo.pl/"+ page_dom.select_one("a.pagination__next")["href"]
+                    except TypeError:
+                        url = None
+                    if not os.path.exists("opinions"):
+                        os.makedirs("opinions")
+                    with open(f"opinions/{product_id}.json", "w", encoding="UTF-8") as jf:
+                        json.dump(all_opinions,jf ,  indent=4, ensure_ascii=False)
+                return redirect(url_for('product', product_id=product_id))
+            return render_template("extract.html", error="Podany produkt nie ma opinii")
+        return render_template("extract.html", error="Podany produkt nie istnieje")
     return render_template("extract.html")
 
+    
+    
 @app.route('/products')
 def products():
     return render_template("products.html")
