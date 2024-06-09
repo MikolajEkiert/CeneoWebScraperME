@@ -1,4 +1,52 @@
 {% extends 'base.html' %}
 {% block content %}
     <p>To jest strona produktu {{product_id}}</p>
+    <div class="container">
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Opinion ID</th>
+                    <th>Author</th>
+                    <th>Recommendation</th>
+                    <th>Number of Stars</th>
+                    <th>Content</th>
+                    <th>Pros</th>
+                    <th>Cons</th>
+                    <th>Helpful for</th>
+                    <th>Unhelpful for</th>
+                    <th>Publish date</th>
+                    <th>Purchase date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in data %}
+                    <tr>
+                        <td>{{ product.opinion_id }}</td>
+                        <td>{{ product.author }}</td>
+                        <td>{{ product.recommendation }}</td>
+                        <td>{{ product.stars }}</td>
+                        <td>{{ product.content }}</td>
+                        <td>
+                            <ul>
+                                {% for pro in product['pros'] %}
+                                <li>{{ pro }}</li>
+                            {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for con in product['cons'] %}
+                                <li>{{ con }}</li>
+                            {% endfor %}
+                            </ul>
+                        </td>
+                        <td>{{ product.helpful }}</td>
+                        <td>{{ product.unhelpful }}</td>
+                        <td>{{ product.publish_date }}</td>
+                        <td>{{ product.purchase_date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
